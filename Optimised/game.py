@@ -19,7 +19,7 @@ pygame.display.set_caption('Optimised Path Snake')
 clock = pygame.time.Clock()
 
 # Grid setup
-resolution = 50
+resolution = 25
 cols = WIDTH // resolution
 rows = HEIGHT // resolution
 
@@ -47,7 +47,7 @@ def draw_grid(grid):
     for col in range(len(grid[0])):
         for row in range(len(grid)):
             if grid[row][col] == 0:
-                pygame.draw.rect(window, (0,0,255), pygame.Rect(col*resolution, row*resolution, resolution, resolution))
+                pygame.draw.rect(window, (65,65,65), pygame.Rect(col*resolution, row*resolution, resolution, resolution))
             else:
                 pygame.draw.rect(window, (255,0,0), pygame.Rect(col*resolution, row*resolution, resolution, resolution))
 
@@ -59,26 +59,26 @@ def draw_grid(grid):
     for row in range(0, HEIGHT, resolution):
         pygame.draw.rect(window, (50,50,50), pygame.Rect(0, row, WIDTH, 1))
 
-def fill_grid(cols, rows):
+def fill_grid(cols: int, rows: int):
     return [[0 for col in range(cols)] for row in range(rows)]
 
-def move_right(snake):
+def move_right(snake:Snake) -> int:
     snake.x_vel = resolution
     return snake.x_vel
 
-def move_left(snake):
+def move_left(snake:Snake) -> int:
     snake.x_vel = -resolution
     return snake.x_vel
 
-def move_up(snake):
+def move_up(snake:Snake) -> int:
     snake.y_vel = -resolution
     return snake.y_vel
 
-def move_down(snake):
+def move_down(snake:Snake) -> int:
     snake.y_vel = resolution
     return snake.y_vel
 
-def check_border_collison(snake):
+def check_border_collison(snake:Snake) -> bool:
     if snake.x > WIDTH:
         return True
         # snake.x_vel = 0
@@ -96,7 +96,7 @@ def check_border_collison(snake):
         # snake.y_vel = 0
         # snake.y = 0 
 
-def main(snake, grid):
+def main(snake:Snake, grid):
 
     while True:
         for event in pygame.event.get():

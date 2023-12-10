@@ -1,4 +1,3 @@
-import pygame
 class Snake:
     x: int = 0
     x_vel: int = 0

@@ -82,7 +82,7 @@ def move_down(snake:Snake) -> int:
     snake.y_vel = 1
     return snake.y_vel
 
-def check_border_collison(snake:Snake) -> bool:
+def border_collision(snake:Snake) -> bool:
     if snake.x + snake.WIDTH > WIDTH:
         return True
         # snake.x_vel = 0
@@ -99,6 +99,11 @@ def check_border_collison(snake:Snake) -> bool:
         return True
         # snake.y_vel = 0
         # snake.y = 0 
+
+def self_collision(grid, snake:Snake) -> bool:
+    if grid[snake.y][snake.x] > 1:
+        return True
+    return False
 
 def food_collision(snake:Snake, food:Food) -> bool:
     left_collision, right_collision, top_collision, bottom_collision = False, False, False, False
@@ -154,9 +159,14 @@ def main(snake:Snake, grid):
         snake.x += snake.x_vel
         snake.y += snake.y_vel
 
-        # Checking collision with border of window
-        if (check_border_collison(snake)):
+        # Checking collision with border of window and with itself
+        if (border_collision(snake)):
             print('GAME OVER')
+            sys.exit(0)
+        elif (self_collision(grid, snake)):
+            print('SELF COLLISION')
+            snake.x_vel = 0
+            snake.y_vel = 0
             sys.exit(0)
         else:
             grid[snake.y][snake.x] = 1 + snake.length
@@ -164,10 +174,12 @@ def main(snake:Snake, grid):
 
         # Checking collision with food
         if (food_collision(snake, food)):
+            print('ATE FOOD')
             snake.length += 1
             grid[food.y][food.x] = 0
             food.x = random.randint(0, cols-1)
             food.y = random.randint(0, rows-1)
+
 
         window.fill((65,65,65))
 

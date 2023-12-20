@@ -19,7 +19,7 @@ pygame.display.set_caption('Optimised Path Snake')
 clock = pygame.time.Clock()
 
 # Grid setup
-resolution = 20
+resolution = 50
 cols = WIDTH // resolution
 rows = HEIGHT // resolution
 
@@ -101,6 +101,8 @@ def border_collision(snake:Snake) -> bool:
         # snake.y = 0 
 
 def self_collision(grid, snake:Snake) -> bool:
+    if snake.y > HEIGHT or snake.x < 0:
+        return False
     if grid[snake.y][snake.x] > 1:
         return True
     return False
@@ -180,6 +182,8 @@ def main(snake:Snake, grid):
             food.x = random.randint(0, cols-1)
             food.y = random.randint(0, rows-1)
 
+            print(grid)
+
 
         window.fill((65,65,65))
 
@@ -202,4 +206,5 @@ def main(snake:Snake, grid):
         clock.tick(15)
 
 
-main(snake, grid)
+if __name__ == '__main__':
+    main(snake, grid)

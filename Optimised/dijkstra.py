@@ -25,6 +25,9 @@ def read_graph(filepath):
             if v1 not in G[v2]:
                 G[v2].append(v1)
     print(G)
+    print('----------------')
+    print(c)
+    print('----------------')
     return G, c
 
 

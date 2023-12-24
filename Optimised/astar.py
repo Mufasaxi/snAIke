@@ -96,6 +96,76 @@ costs = calculateEdgeCosts(adjList, testGrid, numberedGrid)
 # print('COSTS:')
 # print(costs)
 
+def getCoord(point):
+    x = point % 20 # value mod cols
+    y = point // 20 # value // cols
+    return [x, y]
+
+# A star heuristic using Manhattan distance (Taxicab distance)
+def taxiCabDist(points, destination):
+    h = dict()
+    for row in points:
+        for point in row:
+            pointX, pointY = getCoord(point)[0], getCoord(point)[1]
+            destX, destY = getCoord(destination)[0], getCoord(destination)[1]
+            h[point] = abs(pointX - destX) + abs(pointY - destY) # abs(X1 - X2) + (Y1 - Y2)
+    return h
+
+
+def a_star(G, cost, taxiCabDist, origin, destination):
+    l = {destination: float("inf")}
+    pred = dict()
+    path = list()
+    visited = set()
+    closed = set()
+    f = 0
+    nodes = dict()
+
+    def f_cost(node):
+        f = l[node] + taxiCabDist[node]
+        return f
+
+    for v in G:
+        l[v] = float("inf")
+
+    l[origin] = 0
+    visited.add(origin)
+
+    while len(visited) != 0:
+        for node in visited:
+            nodes[node] = f_cost(node)
+        v = min(nodes, key=nodes.get)
+        nodes.pop(v)
+        visited.discard(v)
+        closed.add(v)
+        if v == destination:
+            if destination in pred:
+                path = [destination]
+                while path[0] != origin:
+                    path.insert(0, pred[path[0]])
+            return path, l[destination], visited
+        else:
+            for w in G[v]:
+                if w not in visited and w not in closed:
+                    visited.add(w)
+                    l[w] = l[v] + cost[v,w]
+                    pred[w] = v
+                else:
+                    if l[w] > l[v] + cost[v,w]:
+                        l[w] = l[v] + cost[v,w]
+                        pred[w] = v
+                        if w in closed:
+                            closed.discard(w)
+                            visited.add(w)
+
+
+    if destination in pred:
+        path = [destination]
+        while path[0] != origin:
+            path.insert(0, pred[path[0]])
+
+    return path, l[destination], visited
+
 
 
 # Testing with Dijkstra
@@ -149,7 +219,8 @@ print('t')
 printGrid(testGrid)
 print('n')
 printGrid(numberedGrid)
-print("Kürzester Weg:", path) # since many ways have the shortest path cost wise we need to find the shortest path node wise too, this doesnt do it
+print("DIJKSTRA Kürzester Weg:", path) # since many ways have the shortest path cost wise we need to find the shortest path node wise too, this doesnt do it
 
-
-print(testGrid[6][11], numberedGrid[9][5])
+taxiDists = taxiCabDist(numberedGrid, destination)
+path2 = a_star(G, c, taxiDists, origin, destination)
+print("A STAR path:", path2[0])

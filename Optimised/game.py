@@ -181,8 +181,9 @@ def main(snake:Snake, grid):
             grid[food.y][food.x] = 0
             food.x = random.randint(0, cols-1)
             food.y = random.randint(0, rows-1)
-
-            print(grid)
+            print("X", snake.x)
+            print("Y", snake.y)
+            # print(grid)
 
 
         window.fill((65,65,65))

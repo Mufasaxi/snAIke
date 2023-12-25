@@ -1,49 +1,102 @@
-"""
-Liest einen Graphen in der Form einer Liste (E Startknoten Endknoten Kantengewicht) ein
-"""
+def makeGrid(rows , cols):
+    return [[0 for col in range(cols)] for row in range(rows)]
+
+def numberCells(grid):
+    total = len(grid) * len(grid[0])
+    count = 0
+    outputGrid = makeGrid(len(grid), len(grid[0]))
+    while count < total:
+        for row in range(len(grid)):
+            for col in range(len(grid[0])):
+                outputGrid[row][col] = count
+                count += 1
+    return outputGrid
+
+def findIndex(nestedList, element):
+    return [(i, el.index(element)) for i, el in enumerate(nestedList) if element in el]
+
+def calculateEdgeCosts(adjacencyList, grid, numGrid):
+    edgeCosts = {}
+
+    for node in adjacencyList:
+        for neighbour in adjacencyList[node]:
+            neighbourIndex = findIndex(numGrid, neighbour)
+            neighbourY = neighbourIndex[0][0]
+            neighbourX = neighbourIndex[0][1]
+
+            edgeCosts[node, neighbour] = grid[neighbourY][neighbourX]
+    
+    return edgeCosts
+
+def makeAdjacencyList(grid):
+    lst = {grid[row][col]: [] for row in range(len(grid)) for col in range(len(grid[0]))}
+
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            neighbours = calculateNeighbours(grid, row, col)
+            lst[grid[row][col]] = neighbours
+
+    return lst
+
+def calculateNeighbours(grid, row, col):
+    potentialNeighbours = [(col-1, row), (col+1, row), (col, row-1), (col, row+1)]
+    neighbourIndices = []
+
+    for i, neighbour in enumerate(potentialNeighbours):
+        if neighbour[0] < 0 or neighbour[1] < 0 or neighbour[0] >= len(grid[0]) or neighbour[1] >= len(grid):
+            potentialNeighbours[i] = None
+    neighbourIndices =  [neighbour for neighbour in potentialNeighbours if neighbour is not None]
+
+    neighbours = [grid[index[1]][index[0]] for index in neighbourIndices]
+    return neighbours
 
 
-def read_graph(filepath):
-    G = {}
-    c = {}
-    # Zeilenweise Einlesen der graph.txt
-    f = open(filepath, 'r')
-    lines = f.read().splitlines()
-    for l in lines:
-        s = l.split(' ')
-        if s[0] == 'E':
-            if s[1] not in G.keys():
-                G[s[1]] = []
-            if s[2] not in G.keys():
-                G[s[2]] = []
-            G[s[1]].append(s[2])
-            c[s[1], s[2]] = int(s[3])
-            c[s[2], s[1]] = int(s[3])
-    # Erzeugt einen ungerichteten Graphen
-    for v1 in G:
-        for v2 in G[v1]:
-            if v1 not in G[v2]:
-                G[v2].append(v1)
-    print(G)
-    print('----------------')
-    print(c)
-    print('----------------')
-    return G, c
+def printGrid(grid):
+    for row in grid:
+        print(row)
 
 
-"""
-Implementierung des Dijkstra-Algorithmus
+# grid = makeGrid(5,10)
+# numberedGrid = numberCells(grid)
+# adjList = makeAdjacencyList(numberedGrid)
+# costs = calculateEdgeCosts(adjList, grid, numberedGrid)
+# print('GRID:')
+# printGrid(grid)
+# print('NUMBERED GRID:')
+# printGrid(numberedGrid)
+# print('ADJACENCY LIST:')
+# print(adjList)
+# print('COSTS:')
+# print(costs)
 
-	G = Graph als Adjazenzliste
-	c = Distanzen zwischen den Knoten; koennen mit c[v1,v2] abgefragt werden
-	origin = Startknoten
-	destination = Endknoten
-	maxDist = maximale Fahrdistanz zwischen zwei Knoten
+testGrid = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
 
-	path = [origin, ..., destination] - kuerzester Weg zwischen origin und destination
-"""
+numberedGrid = numberCells(testGrid)
+adjList = makeAdjacencyList(numberedGrid)
+costs = calculateEdgeCosts(adjList, testGrid, numberedGrid)
+# print('GRID:')
+# printGrid(testGrid)
+# print('NUMBERED GRID:')
+# printGrid(numberedGrid)
+# print('ADJACENCY LIST:')
+# print(adjList)
+# print('COSTS:')
+# print(costs)
 
-
+# Testing with Dijkstra
 def dijkstra(G, c, maxDist, origin, destination):
     l = {}
     pred = {}
@@ -54,8 +107,7 @@ def dijkstra(G, c, maxDist, origin, destination):
     # Initialisierung von Dijkstra
     # Origin wird auf 0 gesetzt und alle anderen auf unendlich
     for v in G:
-        l[
-            v] = 10000000000000  # sys.maxint konnte stattdesssen genutzt werden wenn die importierung von Bibliotheken erlaubt
+        l[v] = 10000000000000  # sys.maxint konnte stattdesssen genutzt werden wenn die importierung von Bibliotheken erlaubt
 
     l[origin] = 0
 
@@ -75,7 +127,7 @@ def dijkstra(G, c, maxDist, origin, destination):
                             pred[w] = v
             visited[v] = True
             l[v] = 10000000000000 # damit diese v mit den niedrigsten Wert nicht immer aufgewahelt wird
-
+    print('p',pred)
     if destination in pred:
         path = [destination]
         while path[0] != origin:
@@ -84,16 +136,15 @@ def dijkstra(G, c, maxDist, origin, destination):
     return path
 
 
-"""
-	Testszenario startet hier
-	ACHTUNG: Bei zu kleinem maxDist koennte es keine Loesung mehr geben
-"""
 maxDist = 600000  # maximale Fahrdistanz zwischen zwei Knoten in Metern
 
-G, c = read_graph('Optimised/graph.txt')
-origin = "Lissabon"  # Startknoten
-destination = "Stockholm"  # Endknoten
+G, c = adjList, costs#read_graph('Optimised/graph.txt')
+origin = numberedGrid[6][11]  # Startknoten
+destination = numberedGrid[9][5]  # Endknoten
 
 path = dijkstra(G, c, maxDist, origin, destination)
-
-print("Kürzester Weg:", path)
+print('t')
+printGrid(testGrid)
+print('n')
+printGrid(numberedGrid)
+print("DIJKSTRA Kürzester Weg:", path) # since many ways have the shortest path cost wise we need to find the shortest path node wise too, this doesnt do it

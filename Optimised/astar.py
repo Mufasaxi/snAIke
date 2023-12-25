@@ -13,7 +13,7 @@ def numberCells(grid):
     return outputGrid
 
 def findIndex(nestedList, element):
-    return [(i, el.index(element)) for i, el in enumerate(nestedList) if element in el]
+    return [[i, el.index(element)] for i, el in enumerate(nestedList) if element in el]
 
 def calculateEdgeCosts(adjacencyList, grid, numGrid):
     edgeCosts = {}
@@ -91,10 +91,10 @@ costs = calculateEdgeCosts(adjList, testGrid, numberedGrid)
 # printGrid(testGrid)
 # print('NUMBERED GRID:')
 # printGrid(numberedGrid)
-# print('ADJACENCY LIST:')
-# print(adjList)
-# print('COSTS:')
-# print(costs)
+print('ADJACENCY LIST:')
+print(adjList)
+print('COSTS:')
+print(costs)
 
 def getCoord(point):
     x = point % 20 # value mod cols
@@ -158,7 +158,6 @@ def a_star(G, cost, taxiCabDist, origin, destination):
                             closed.discard(w)
                             visited.add(w)
 
-
     if destination in pred:
         path = [destination]
         while path[0] != origin:
@@ -166,60 +165,14 @@ def a_star(G, cost, taxiCabDist, origin, destination):
 
     return path, l[destination], visited
 
-
-
-# Testing with Dijkstra
-def dijkstra(G, c, maxDist, origin, destination):
-    l = {}
-    pred = {}
-    path = []
-    R = []
-    visited = {}  # dies brauchen wir damit die schon besuchten Knoten nicht zweimal geprueft werden
-
-    # Initialisierung von Dijkstra
-    # Origin wird auf 0 gesetzt und alle anderen auf unendlich
-    for v in G:
-        l[v] = 10000000000000  # sys.maxint konnte stattdesssen genutzt werden wenn die importierung von Bibliotheken erlaubt
-
-    l[origin] = 0
-
-    for v in G:
-        visited[v] = False
-
-    nodes = list(G.keys())
-    while len(nodes) != len(R):
-        v = min(l, key=l.get)  # um auf den Knoten mit der niedrigsten Laenge zu greifen
-        while visited[v] is False:
-            R.append(v)
-            for w in G[v]:
-                if w not in R:
-                    if c[v, w] <= maxDist:
-                        if l[w] > l[v] + c[v, w]:
-                            l[w] = l[v] + c[v, w]
-                            pred[w] = v
-            visited[v] = True
-            l[v] = 10000000000000 # damit diese v mit den niedrigsten Wert nicht immer aufgewahelt wird
-    print('p',pred)
-    if destination in pred:
-        path = [destination]
-        while path[0] != origin:
-            path.insert(0, pred[path[0]])
-
-    return path
-
-
-maxDist = 600000  # maximale Fahrdistanz zwischen zwei Knoten in Metern
-
 G, c = adjList, costs#read_graph('Optimised/graph.txt')
 origin = numberedGrid[6][11]  # Startknoten
 destination = numberedGrid[9][5]  # Endknoten
 
-path = dijkstra(G, c, maxDist, origin, destination)
 print('t')
 printGrid(testGrid)
 print('n')
 printGrid(numberedGrid)
-print("DIJKSTRA Kürzester Weg:", path) # since many ways have the shortest path cost wise we need to find the shortest path node wise too, this doesnt do it
 
 taxiDists = taxiCabDist(numberedGrid, destination)
 path2 = a_star(G, c, taxiDists, origin, destination)

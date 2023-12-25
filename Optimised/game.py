@@ -5,12 +5,13 @@ import random
 
 from snake import Snake
 from food import Food
+from pathfinder import Pathfinder
 
 pygame.init()
 
 # Window setup
-WIDTH = 1000
-HEIGHT = 600
+WIDTH = 500
+HEIGHT = 500
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -19,7 +20,7 @@ pygame.display.set_caption('Optimised Path Snake')
 clock = pygame.time.Clock()
 
 # Grid setup
-resolution = 50
+resolution = 100
 cols = WIDTH // resolution
 rows = HEIGHT // resolution
 
@@ -27,8 +28,8 @@ grid = []
 
 # Snake setup
 snake = Snake()
-snake.x = 10
-snake.y = 10
+snake.x = random.randint(0, cols-1)
+snake.y = random.randint(0, rows-1)
 snake.WIDTH = 1
 snake.HEIGHT = 1
 snake.length = 1
@@ -45,7 +46,10 @@ food.y = random.randint(0, rows-1)
 food.WIDTH = 1
 food.HEIGHT = 1
 
-def draw_grid(grid):
+# Pathfinder
+pathfinder = Pathfinder(rows, cols)
+
+def draw_grid(grid: list[list[int]]) -> None:
     # Fields of grid
     for col in range(len(grid[0])):
         for row in range(len(grid)):
@@ -63,7 +67,7 @@ def draw_grid(grid):
     for row in range(0, HEIGHT, resolution):
         pygame.draw.rect(window, (50,50,50), pygame.Rect(0, row, WIDTH, 1))
 
-def fill_grid(cols: int, rows: int):
+def fill_grid(cols: int, rows: int) -> list[list[int]]:
     return [[0 for col in range(cols)] for row in range(rows)]
 
 def move_right(snake:Snake) -> int:
@@ -100,10 +104,12 @@ def border_collision(snake:Snake) -> bool:
         # snake.y_vel = 0
         # snake.y = 0 
 
-def self_collision(grid, snake:Snake) -> bool:
+def self_collision(grid: list[list[int]], snake:Snake) -> bool:
     if snake.y > HEIGHT or snake.x < 0:
         return False
     if grid[snake.y][snake.x] > 1:
+        print(grid)
+        print(snake.x, snake.y)
         return True
     return False
 
@@ -121,14 +127,13 @@ def food_collision(snake:Snake, food:Food) -> bool:
     if (left_collision and right_collision and bottom_collision and top_collision):
         return True
     
-def remove_tail(grid):
+def remove_tail(grid: list[list[int]]) -> None:
     for col in range(len(grid[0])):
         for row in range(len(grid)):
             if grid[row][col] > 0:
                 grid[row][col] -= 1 
 
-def main(snake:Snake, grid):
-
+def main(snake:Snake, grid: list[list[int]]) -> None:
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -185,7 +190,6 @@ def main(snake:Snake, grid):
             print("Y", snake.y)
             # print(grid)
 
-
         window.fill((65,65,65))
 
         # # Filling grid array and drawing it onto window
@@ -198,6 +202,18 @@ def main(snake:Snake, grid):
         grid[food.y][food.x] = -1
 
         grid[snake.y][snake.x] = snake.length
+
+        # Pathfinding using A*
+        numbered_grid = pathfinder.numberCells(grid)
+        adjacency_list = pathfinder.makeAdjacencyList(numbered_grid)
+        edge_costs = pathfinder.calculateEdgeCosts(adjacency_list, grid, numbered_grid)
+
+        origin = numbered_grid[snake.y][snake.x]
+        destination = numbered_grid[food.y][food.x]
+
+        taxicab_distances = pathfinder.taxiCabDist(numbered_grid, destination)
+        path = pathfinder.a_star(adjacency_list, edge_costs, taxicab_distances, origin, destination)[0]
+        print(path)
 
         # snake_rect = pygame.Rect(snake.x*resolution,snake.y*resolution,snake.WIDTH*resolution,snake.HEIGHT*resolution)
         # snake_rect_draw = pygame.draw.rect(window, (255,255,255), snake_rect)

@@ -18,7 +18,7 @@ pygame.display.set_caption('Optimised Path Snake')
 clock = pygame.time.Clock()
 
 # Grid setup
-resolution = 50
+resolution = 20
 cols = WIDTH // resolution
 rows = HEIGHT // resolution
 grid = []
@@ -105,8 +105,6 @@ def self_collision(grid: list[list[int]], snake:Snake) -> bool:
     if snake.y > HEIGHT or snake.x < 0:
         return False
     if grid[snake.y][snake.x] > 1:
-        print(grid)
-        print(snake.x, snake.y)
         return True
     return False
 
@@ -188,9 +186,7 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
                 if food.x != snake.x and food.y != snake.y:
                     break
                 food.x = random.randint(0, cols-1)
-                food.y = random.randint(0, rows-1)                
-            print("X", snake.x)
-            print("Y", snake.y)
+                food.y = random.randint(0, rows-1)
 
         window.fill((65,65,65))
 
@@ -202,16 +198,15 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
         grid[snake.y][snake.x] = snake.length
 
         # Pathfinding using A* (still isn't flawless but good enough)
-        numbered_grid = pathfinder.numberCells(grid)
-        adjacency_list = pathfinder.makeAdjacencyList(numbered_grid)
-        edge_costs = pathfinder.calculateEdgeCosts(adjacency_list, grid, numbered_grid)
+        numbered_grid = pathfinder.number_cells(grid)
+        adjacency_list = pathfinder.make_adjacency_list(numbered_grid)
+        edge_costs = pathfinder.calculate_edge_costs(adjacency_list, grid, numbered_grid)
 
         origin = numbered_grid[snake.y][snake.x]
         destination = numbered_grid[food.y][food.x]
 
-        taxicab_distances = pathfinder.taxiCabDist(numbered_grid, destination)
+        taxicab_distances = pathfinder.taxi_cab_distance(numbered_grid, destination)
         path = pathfinder.a_star(adjacency_list, edge_costs, taxicab_distances, origin, destination)[0]
-        print(path)
 
         current_position = numbered_grid[snake.y][snake.x]
         for position in path:
@@ -228,7 +223,7 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
         
         pygame.display.update()
 
-        clock.tick(30)
+        clock.tick(120)
 
 
 if __name__ == '__main__':

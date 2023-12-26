@@ -16,7 +16,7 @@ class Pathfinder:
         '''
         return [[0 for col in range(cols)] for row in range(rows)]
 
-    def number_cells(self, grid: list[int]) -> list[list[int]]:
+    def number_cells(self, grid: list[list[int]]) -> list[list[int]]:
         '''
         Returns a numbered grid with 0 at the top left corner, and the last element in the bottom right corner.
 
@@ -153,7 +153,7 @@ class Pathfinder:
             destination: Numbered cell, that is the destination of the A* algorithm.
 
         Returns:
-            h: Dictionary containing taxi cad distance from all cells to the destination cell.
+            h: Dictionary containing taxi cab distance from all cells to the destination cell.
         '''
         h = dict()
         for row in points:

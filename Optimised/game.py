@@ -10,20 +10,17 @@ from pathfinder import Pathfinder
 pygame.init()
 
 # Window setup
-WIDTH = 500
-HEIGHT = 500
-
+WIDTH = 1000
+HEIGHT = 800
 window = pygame.display.set_mode((WIDTH, HEIGHT))
-
 pygame.display.set_caption('Optimised Path Snake')
 
 clock = pygame.time.Clock()
 
 # Grid setup
-resolution = 100
+resolution = 50
 cols = WIDTH // resolution
 rows = HEIGHT // resolution
-
 grid = []
 
 # Snake setup
@@ -186,15 +183,16 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
             grid[food.y][food.x] = 0
             food.x = random.randint(0, cols-1)
             food.y = random.randint(0, rows-1)
+            # Ensure that food doesn't spawn where snake is, this doesn't entirely work since I'm not checking entire snake body
+            while True:
+                if food.x != snake.x and food.y != snake.y:
+                    break
+                food.x = random.randint(0, cols-1)
+                food.y = random.randint(0, rows-1)                
             print("X", snake.x)
             print("Y", snake.y)
-            # print(grid)
 
         window.fill((65,65,65))
-
-        # # Filling grid array and drawing it onto window
-        # if not grid:
-        #     grid = fill_grid(cols, rows)
 
         draw_grid(grid)
 
@@ -203,7 +201,7 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
 
         grid[snake.y][snake.x] = snake.length
 
-        # Pathfinding using A*
+        # Pathfinding using A* (still isn't flawless but good enough)
         numbered_grid = pathfinder.numberCells(grid)
         adjacency_list = pathfinder.makeAdjacencyList(numbered_grid)
         edge_costs = pathfinder.calculateEdgeCosts(adjacency_list, grid, numbered_grid)
@@ -215,12 +213,22 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
         path = pathfinder.a_star(adjacency_list, edge_costs, taxicab_distances, origin, destination)[0]
         print(path)
 
-        # snake_rect = pygame.Rect(snake.x*resolution,snake.y*resolution,snake.WIDTH*resolution,snake.HEIGHT*resolution)
-        # snake_rect_draw = pygame.draw.rect(window, (255,255,255), snake_rect)
-
+        current_position = numbered_grid[snake.y][snake.x]
+        for position in path:
+            if position == current_position:
+                continue
+            if position == current_position + 1:
+                snake.x += 1
+            elif position == current_position - 1:
+                snake.x -= 1
+            elif position == current_position + cols:
+                snake.y += 1
+            elif position == current_position - cols:
+                snake.y -= 1
+        
         pygame.display.update()
 
-        clock.tick(15)
+        clock.tick(30)
 
 
 if __name__ == '__main__':

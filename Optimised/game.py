@@ -129,6 +129,7 @@ def remove_tail(grid: list[list[int]]) -> None:
                 grid[row][col] -= 1 
 
 def main(snake:Snake, grid: list[list[int]]) -> None:
+    printed = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
@@ -176,7 +177,7 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
 
         # Checking collision with food
         if (food_collision(snake, food)):
-            print('ATE FOOD')
+            # print('ATE FOOD')
             snake.length += 1
             grid[food.y][food.x] = 0
             food.x = random.randint(0, cols-1)
@@ -208,18 +209,27 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
         taxicab_distances = pathfinder.taxi_cab_distance(numbered_grid, destination)
         path = pathfinder.a_star(adjacency_list, edge_costs, taxicab_distances, origin, destination)[0]
 
+        if not printed and snake.length > 3:
+            print(grid)
+            print(path)
+            printed = True
+
         current_position = numbered_grid[snake.y][snake.x]
         for position in path:
             if position == current_position:
                 continue
             if position == current_position + 1:
                 snake.x += 1
+                print('RIGHT')
             elif position == current_position - 1:
                 snake.x -= 1
+                print('LEFT')
             elif position == current_position + cols:
                 snake.y += 1
+                print('DOWN')
             elif position == current_position - cols:
                 snake.y -= 1
+                print('UP')
         
         pygame.display.update()
 

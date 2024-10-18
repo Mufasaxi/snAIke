@@ -2,6 +2,7 @@ import pygame
 import pygame.locals
 import sys
 import random
+import numpy as np
 
 from snake import Snake
 from food import Food
@@ -30,7 +31,8 @@ snake.y = random.randint(0, rows-1)
 snake.WIDTH = 1
 snake.HEIGHT = 1
 snake.length = 1
-snake_rect = pygame.Rect(snake.x*resolution, snake.y*resolution, snake.WIDTH*resolution, snake.HEIGHT*resolution)
+snake_rect = pygame.Rect(snake.x*resolution, snake.y*resolution,
+                         snake.WIDTH*resolution, snake.HEIGHT*resolution)
 
 # Snake movement
 snake.x_vel = 0
@@ -43,47 +45,60 @@ food.y = random.randint(0, rows-1)
 food.WIDTH = 1
 food.HEIGHT = 1
 
+dataset_goal_length = 100000
+dataset = [[],[]]
+
 # Pathfinder
 pathfinder = Pathfinder(rows, cols)
+
 
 def draw_grid(grid: list[list[int]]) -> None:
     # Fields of grid
     for col in range(len(grid[0])):
         for row in range(len(grid)):
             if grid[row][col] == 0:
-                pygame.draw.rect(window, (65,65,65), pygame.Rect(col*resolution, row*resolution, resolution, resolution))
+                pygame.draw.rect(window, (65, 65, 65), pygame.Rect(
+                    col*resolution, row*resolution, resolution, resolution))
             elif grid[row][col] == -1:
-                pygame.draw.rect(window, (255,0,0), pygame.Rect(col*resolution, row*resolution, food.WIDTH*resolution, food.HEIGHT*resolution))
+                pygame.draw.rect(window, (255, 0, 0), pygame.Rect(
+                    col*resolution, row*resolution, food.WIDTH*resolution, food.HEIGHT*resolution))
             elif grid[row][col] >= 1:
-                pygame.draw.rect(window, (255,255,255), pygame.Rect(col*resolution, row*resolution, snake.WIDTH*resolution, snake.HEIGHT*resolution))
+                pygame.draw.rect(window, (255, 255, 255), pygame.Rect(
+                    col*resolution, row*resolution, snake.WIDTH*resolution, snake.HEIGHT*resolution))
 
     # Grid lines
     for col in range(0, WIDTH, resolution):
-        pygame.draw.rect(window, (50,50,50), pygame.Rect(col, 0, 1, HEIGHT))
+        pygame.draw.rect(window, (50, 50, 50), pygame.Rect(col, 0, 1, HEIGHT))
 
     for row in range(0, HEIGHT, resolution):
-        pygame.draw.rect(window, (50,50,50), pygame.Rect(0, row, WIDTH, 1))
+        pygame.draw.rect(window, (50, 50, 50), pygame.Rect(0, row, WIDTH, 1))
+
 
 def fill_grid(cols: int, rows: int) -> list[list[int]]:
     return [[0 for col in range(cols)] for row in range(rows)]
 
-def move_right(snake:Snake) -> int:
+
+def move_right(snake: Snake) -> int:
     snake.x_vel = 1
     return snake.x_vel
 
-def move_left(snake:Snake) -> int:
+
+def move_left(snake: Snake) -> int:
     snake.x_vel = -1
     return snake.x_vel
 
-def move_up(snake:Snake) -> int:
+
+def move_up(snake: Snake) -> int:
     snake.y_vel = -1
     return snake.y_vel
 
-def move_down(snake:Snake) -> int:
+
+def move_down(snake: Snake) -> int:
     snake.y_vel = 1
     return snake.y_vel
 
-def border_collision(snake:Snake) -> bool:
+
+def border_collision(snake: Snake) -> bool:
     if snake.x + snake.WIDTH > WIDTH:
         return True
         # snake.x_vel = 0
@@ -99,16 +114,18 @@ def border_collision(snake:Snake) -> bool:
     if snake.y < 0:
         return True
         # snake.y_vel = 0
-        # snake.y = 0 
+        # snake.y = 0
 
-def self_collision(grid: list[list[int]], snake:Snake) -> bool:
+
+def self_collision(grid: list[list[int]], snake: Snake) -> bool:
     if snake.y > HEIGHT or snake.x < 0:
         return False
     if grid[snake.y][snake.x] > 1:
         return True
     return False
 
-def food_collision(snake:Snake, food:Food) -> bool:
+
+def food_collision(snake: Snake, food: Food) -> bool:
     left_collision, right_collision, top_collision, bottom_collision = False, False, False, False
     if (snake.x + snake.WIDTH > food.x):
         right_collision = True
@@ -121,18 +138,51 @@ def food_collision(snake:Snake, food:Food) -> bool:
 
     if (left_collision and right_collision and bottom_collision and top_collision):
         return True
-    
+
+
 def remove_tail(grid: list[list[int]]) -> None:
     for col in range(len(grid[0])):
         for row in range(len(grid)):
             if grid[row][col] > 0:
-                grid[row][col] -= 1 
+                grid[row][col] -= 1
+
+
+def populate_dataset_list(grid: list[list[int]], direction: str) -> None:
+   # convert string direction to numbers (in this case 2 bit binary)
+    # while len(dataset[0]) < dataset_goal_length:
+    match direction:
+        case 'UP':
+            direction_encoding = 0b00
+        case 'RIGHT':
+            direction_encoding = 0b01
+        case 'DOWN':
+            direction_encoding = 0b10
+        case 'LEFT':
+            direction_encoding = 0b11
+
+    dataset[0].append(grid)
+    dataset[1].append(direction_encoding)
+
+        # print('added grid and direction pair')
+
+    # print('done')
+    # create_numpy_dataset(dataset)
+
+def create_numpy_dataset(dataset: tuple[list[list[int]], int]) -> None:
+    print('creating numpy dataset')
+    x_file = 'X_data.npy'
+    y_file = 'y_data.npy' 
+    X = np.array(dataset[0], 'float32')
+    y = np.array(dataset[1], 'float32')
+    np.save(x_file, X)
+    np.save(y_file, y)
+    sys.exit(0)
 
 def main(snake:Snake, grid: list[list[int]]) -> None:
-    printed = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                print('dataset len', len(dataset[0]))
                 sys.exit(0)
 
         key_pressed = pygame.key.get_pressed()
@@ -165,11 +215,13 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
         # Checking collision with border of window and with itself
         if (border_collision(snake)):
             print('GAME OVER')
+            print('dataset len', len(dataset[0]))
             sys.exit(0)
         elif (self_collision(grid, snake)):
             print('SELF COLLISION')
             snake.x_vel = 0
             snake.y_vel = 0
+            print('dataset len', len(dataset[0]))
             sys.exit(0)
         else:
             grid[snake.y][snake.x] = 1 + snake.length
@@ -209,28 +261,28 @@ def main(snake:Snake, grid: list[list[int]]) -> None:
         taxicab_distances = pathfinder.taxi_cab_distance(numbered_grid, destination)
         path = pathfinder.a_star(adjacency_list, edge_costs, taxicab_distances, origin, destination)[0]
 
-        if not printed and snake.length > 3:
-            print(grid)
-            print(path)
-            printed = True
-
         current_position = numbered_grid[snake.y][snake.x]
+
         for position in path:
             if position == current_position:
                 continue
             if position == current_position + 1:
                 snake.x += 1
-                print('RIGHT')
+                direction = 'RIGHT'
             elif position == current_position - 1:
                 snake.x -= 1
-                print('LEFT')
+                direction = 'LEFT'
             elif position == current_position + cols:
                 snake.y += 1
-                print('DOWN')
+                direction = 'DOWN'
             elif position == current_position - cols:
                 snake.y -= 1
-                print('UP')
-        
+                direction = 'UP'
+            if len(dataset[0]) < dataset_goal_length:
+                populate_dataset_list(grid, direction)
+            else:
+                create_numpy_dataset(dataset)
+
         pygame.display.update()
 
         clock.tick(120)

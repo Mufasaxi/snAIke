@@ -1,6 +1,8 @@
 # snAIke
 sn**AI**ke is a repository with automated versions of the game Snake.
 
+![Demo of program](Demo/demo.gif)
+
 ## Optimised
 The code in this folder contains a version of Snake that plays itself following the shortest path between the Snake's head and the food, which is calculated using the A* algorithm.
 This isn't entirely flawless, but it's good enough as a proof of concept.

@@ -45,7 +45,7 @@ food.y = random.randint(0, rows-1)
 food.WIDTH = 1
 food.HEIGHT = 1
 
-dataset_goal_length = 100000
+dataset_goal_length = 70000
 dataset = [[],[]]
 
 # Pathfinder
@@ -170,10 +170,11 @@ def populate_dataset_list(grid: list[list[int]], direction: str) -> None:
 
 def create_numpy_dataset(dataset: tuple[list[list[int]], int]) -> None:
     print('creating numpy dataset')
-    x_file = 'X_data.npy'
-    y_file = 'y_data.npy' 
+    x_file = 'X_data1.npy'
+    y_file = 'y_data1.npy' 
     X = np.array(dataset[0], 'float32')
     y = np.array(dataset[1], 'float32')
+    print(X.shape(), y.shape())
     np.save(x_file, X)
     np.save(y_file, y)
     sys.exit(0)
